@@ -28,10 +28,8 @@ def parse_http_response(response: str) -> tuple:
 
 #construir respuesta http desde el server
 
-	import datetime
-	
-	def build_http_response(body_content: str, status_code: int = 200, status_message: str = "OK") -> bytes:
-	    """
+import datetime
+"""
 	    Crea una respuesta HTTP/1.1 completa con los encabezados especificados y un cuerpo.
 	
 	    Args:
@@ -42,27 +40,20 @@ def parse_http_response(response: str) -> tuple:
 	    Returns:
 	        bytes: La respuesta HTTP completa lista para ser enviada a través de un socket.
 	    """
-	    body_bytes = body_content.encode('utf-8')
-	    content_length = len(body_bytes)
+def build_http_response(body: str, status_code: int = 200, status_message: str = "OK") -> bytes:
+	status_line = f"HTTP/1.1 {status_code} {status_message}\r\n"
+	# Construir los encabezados
+	headers = [
+	    "Connection: close",
+	    f"Content-Length: {len(body.encode('utf-8'))}",
+	    "Content-Type: text/xml", # Tu requisito específico
+	    f"Date: {datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")}",
+	    "Server: no sabe no contesta" ############## Tu requisito específico
+	]
+	headers_block = "\r\n".join(headers) + "\r\n\r\n" # Doble \r\n al final para separar encabezados del cuerpo
 	
-	    current_gmt_date = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+	# Unir todo
+	full_response = status_line + headers_block
+	full_response_bytes = full_response.encode('utf-8') + body
 	
-	    status_line = f"HTTP/1.1 {status_code} {status_message}\r\n"
-	
-	    # Construir los encabezados
-	    headers = [
-	        "Connection: close",
-	        f"Content-Length: {content_length}",
-	        "Content-Type: text/xml", # Tu requisito específico
-	        f"Date: {current_gmt_date}",
-	        "Server: no sabe no contesta" ############## Tu requisito específico
-	    ]
-	
-	    # Unir los encabezados con CRLF (salto de línea de Windows)
-	    headers_block = "\r\n".join(headers) + "\r\n\r\n" # Doble CRLF al final para separar encabezados del cuerpo
-	
-	    # Unir todo
-	    full_response = status_line + headers_block
-	    full_response_bytes = full_response.encode('utf-8') + body_bytes
-	
-	    return full_response_bytes
+	return full_response_bytes
