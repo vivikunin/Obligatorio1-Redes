@@ -135,12 +135,12 @@ class server:
             name = ET.SubElement(member, "name")
             name.text = "faultCode"
             value = ET.SubElement(member, "value")
-            value.append(str(error))
+            value.text = str(error)
             member = ET.SubElement(struct, "member")
             name = ET.SubElement(member, "name")
             name.text = "faultString"   
             value = ET.SubElement(member, "value")
-            value.append(faultString)
+            value.text = faultString
             return ET.tostring(methodResponse, encoding="utf-8", xml_declaration=True)
 
     def add_method(self,proc1):
