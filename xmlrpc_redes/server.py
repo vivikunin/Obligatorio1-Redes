@@ -15,18 +15,45 @@ class server:
 
     
     def atenderCliente(self, client):
-        data = client.recv(1024) 
-        info = http_utils.parse_http_response(data)
-        response = self.stub(info[3])
+        data = b""
+        while b"\r\n\r\n" not in data:
+            resto = client.recv(1024)
+            if not resto:
+                break
+            data += resto
+
+        # Separa header y body
+        header, _, body = data.partition(b"\r\n\r\n")
+        header_str = header.decode("utf-8")
+        # Busca Content-Length
+        import re
+        match = re.search(r"Content-Length: (\d+)", header_str)
+        content_length = int(match.group(1)) if match else 0
+
+        # Calcula cuántos bytes faltan del body
+        body_bytes = body
+        while len(body_bytes) < content_length:
+            resto = client.recv(1024)
+            if not resto:
+                break
+            body_bytes += resto
+        print("body bytes", body_bytes)
+        # Reconstruye el mensaje completo
+        full_message = header + b"\r\n\r\n" + body_bytes
+
+        info = http_utils.parse_http_response(full_message.decode("utf-8"))
+        print("info 2", info)
+        response = self.stub(info[2],client)
         data = http_utils.build_http_response(response)
+        print("data",data)
         total_sent = 0
         while total_sent < len(data):
             remain = client.send(data[total_sent:])
             if remain == 0:
                 raise RuntimeError("Socket connection broken")
-            total_sent += remain   
+            total_sent += remain    
 
-    def stub(self, data):
+    def stub(self, data,client):
         faultString=""
         faultCode=0
         try:
@@ -53,12 +80,7 @@ class server:
                 faultCode = 5
                 faultString = f"Otros errores: {str(e)}"
         body = self.build_xmlrpc_response(retorno, faultCode, faultString)
-        response = http_utils.build_http_response(body)
-        while total_sent < len(response):
-            remain = self.client.send(response[total_sent:])
-            if remain == 0:
-                raise RuntimeError("Socket connection broken")
-            total_sent += remain   
+        return body
 
     def serialize_value(self, val):
         value = ET.Element("value")
@@ -118,6 +140,7 @@ class server:
             name.append("faultString")
             value = ET.SubElement(member, "value")
             value.append(faultString)
+            return ET.tostring(methodResponse, encoding="utf-8", xml_declaration=True)
 
     def add_method(self,proc1):
         self.methods[proc1.__name__] = proc1
