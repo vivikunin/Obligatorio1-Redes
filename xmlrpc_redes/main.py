@@ -2,7 +2,7 @@ from server import *
 
 if __name__ == "__main__":
 
-    server = server("localhost", 5000)
+    server = server("localhost", 8000)
 
     def suma(a, b):
         return int(int(a) + int(b))

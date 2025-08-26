@@ -56,6 +56,7 @@ class server:
     def stub(self, data,client):
         faultString=""
         faultCode=0
+        retorno = None
         try:
             root = ET.fromstring(data)
             method = root.find('methodName').text
@@ -132,12 +133,12 @@ class server:
             struct = ET.SubElement(value, "struct")
             member = ET.SubElement(struct, "member")
             name = ET.SubElement(member, "name")
-            name.append("faultCode")
+            name.text = "faultCode"
             value = ET.SubElement(member, "value")
             value.append(str(error))
             member = ET.SubElement(struct, "member")
             name = ET.SubElement(member, "name")
-            name.append("faultString")
+            name.text = "faultString"   
             value = ET.SubElement(member, "value")
             value.append(faultString)
             return ET.tostring(methodResponse, encoding="utf-8", xml_declaration=True)
