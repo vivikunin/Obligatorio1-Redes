@@ -53,30 +53,33 @@ class server:
                 raise RuntimeError("Socket connection broken")
             total_sent += remain    
 
-    def stub(self, data,client):
-        faultString=""
-        faultCode=0
+    def stub(self, data, client):
+        faultString = ""
+        faultCode = 0
         retorno = None
         try:
             root = ET.fromstring(data)
-            method = root.find('methodName').text
+            method_elem = root.find('methodName')
+            if method_elem is None:
+                raise Exception("NO_METHOD")
+            method = method_elem.text
             if method not in self.methods:
-                raise Exception (e=2)
+                raise Exception("NO_METHOD")
             params = [v[0].text for v in root.findall('params/param/value')]
             retorno = self.methods[method](*params)
+        except ET.ParseError:
+            faultCode = 1
+            faultString = "Error parseo de XML"
         except TypeError:
-                faultCode = 3
-                faultString = "Error en parámetros del método invocado"
+            faultCode = 3
+            faultString = "Error en parámetros del metodo invocado"
         except RuntimeError:
-                faultCode = 4
-                faultString = "Error interno en la ejecución del método"
+            faultCode = 4
+            faultString = "Error interno en la ejecución del metodo"
         except Exception as e:
-            if e==ET.ParseError:
-                faultCode = 1
-                faultString = "Error parseo de XML"
-            elif e==2:
+            if str(e) == "NO_METHOD":
                 faultCode = 2
-                faultString = "No existe el método invocado"
+                faultString = "No existe el metodo invocado"
             else:
                 faultCode = 5
                 faultString = f"Otros errores: {str(e)}"
