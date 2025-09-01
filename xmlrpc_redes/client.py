@@ -1,5 +1,6 @@
 from multiprocessing.dummy.connection import Client
 import socket
+import sys
 import xml.etree.ElementTree as ET
 import datetime
 import http_utils
@@ -164,6 +165,11 @@ class client:
                 result[name] = self.extraer_value(val)
             return result
         return value_elem.text
+    
+    def close(self):
+        if hasattr(self, "sock"):
+            self.sock.close()
+            print("Socket del cliente cerrado correctamente.")
 
 if __name__ == "__main__":
     try:
@@ -206,8 +212,22 @@ if __name__ == "__main__":
         except Exception as e:
             print("Error al invocar el procedimiento remoto:", e)
         
+        cliente = client("localhost", 8001)
+        lista = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        try:
+            resultado = cliente.estadisticas_lista(lista)
+            print("Resultado estadisticas_lista:", resultado)
+        except Exception as e:
+            print("Error:", e)
 
+        cliente = client("localhost", 8001)
+        # Parámetros: a, b, c, x0, lr, epochs
+        try:
+            resultado = cliente.gradient_descent(1, -2, 1, 0, 0.1, 10)
+            print("Resultado gradient_descent:", resultado)
+        except Exception as e:
+            print("Error:", e)
     except KeyboardInterrupt:
             print("Cerrando conexión...")
             cliente.close()
-    
+            

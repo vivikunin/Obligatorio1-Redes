@@ -214,6 +214,7 @@ if __name__ == "__main__":
             return a/b
         
         def funcion_muy_complicada(lista, dicc, numero, texto, bandera, fecha):
+                #while True:
                 """
                 Ejecuta una serie de operaciones complejas sobre los parámetros recibidos.
                 - lista: lista de enteros
@@ -263,11 +264,49 @@ if __name__ == "__main__":
                 except Exception as e:
                     return {"error": str(e)}
 
+        def gradient_descent(a, b, c, x0, lr, epochs):
+            """
+            Descenso por gradiente para f(x) = ax^2 + bx + c
+            - a, b, c: coeficientes de la función
+            - x0: valor inicial de x
+            - lr: tasa de aprendizaje
+            - epochs: cantidad de iteraciones
+            Devuelve el valor mínimo encontrado y la lista de valores de x en cada paso.
+            """
+            x = float(x0)
+            history = [x]
+            for _ in range(int(epochs)):
+                grad = 2 * a * x + b  # Derivada de f(x)
+                x = x - lr * grad
+                history.append(x)
+            return {
+                "minimo_aproximado": x,
+                "historial_x": history
+            }
+
+        def estadisticas_lista(lista):
+            """
+            Recibe una lista de números y devuelve un diccionario con estadísticas básicas.
+            """
+            if not lista:
+                return {"error": "Lista vacía"}
+            return {
+                "min": min(lista),
+                "max": max(lista),
+                "promedio": sum(lista) / len(lista),
+                "cantidad": len(lista),
+                "pares": [x for x in lista if x % 2 == 0],
+                "impares": [x for x in lista if x % 2 != 0]
+            }
+
         server1.add_method(suma)
         server1.add_method(concat)
         server1.add_method(find)
         server1.add_method(div)
         server2.add_method(funcion_muy_complicada)
+        server2.add_method(gradient_descent)
+        server2.add_method(estadisticas_lista)
+
         import threading
         #### ESTO ES PARA QUE LOS SERVIDORES CORRAN EN HILOS SEPARADOS ####
         threading.Thread(target=server1.serve, daemon=True).start()
