@@ -4,7 +4,6 @@ import socket
 import threading
 import xml.etree.ElementTree as ET
 import http_utils
-from client import *
 
 class server:
     def __init__(self, ip, puerto): 
@@ -37,15 +36,13 @@ class server:
             if not resto:
                 break
             body_bytes += resto
-        print("body bytes", body_bytes)
+
         # Reconstruye el mensaje completo
         full_message = header + b"\r\n\r\n" + body_bytes
 
         info = http_utils.parse_http_response(full_message.decode("utf-8"))
-        print("info 2", info)
         response = self.stub(info[2],client)
         data = http_utils.build_http_response(response)
-        print("data",data)
         total_sent = 0
         while total_sent < len(data):
             remain = client.send(data[total_sent:])
@@ -86,7 +83,7 @@ class server:
         body = self.build_xmlrpc_response(retorno, faultCode, faultString)
         return body
 
-    def serialize_value(self, val):
+    def definir_value(self, val):
         value = ET.Element("value")
         if type(val) == int:
             tipo = ET.SubElement(value, "int")
@@ -107,14 +104,14 @@ class server:
             array = ET.SubElement(value, "array")
             data = ET.SubElement(array, "data")
             for item in val:
-                data.append(self.serialize_value(item))
+                data.append(self.definir_value(item))
         elif type(val) == dict:
             struct = ET.SubElement(value, "struct")
             for k, v in val.items():
                 member = ET.SubElement(struct, "member")
                 name = ET.SubElement(member, "name")
                 name.text = k
-                member.append(self.serialize_value(v))
+                member.append(self.definir_value(v))
         else:
             tipo = ET.SubElement(value, "string")
             tipo.text = str(val)
@@ -127,7 +124,7 @@ class server:
             methodResponse = ET.Element("methodResponse")
             params = ET.SubElement(methodResponse, "params")
             param = ET.SubElement(params, "param")
-            param.append(self.serialize_value(retorno))
+            param.append(self.definir_value(retorno))
             return ET.tostring(methodResponse, encoding="utf-8", xml_declaration=True)
         else:
             methodResponse = ET.Element("methodResponse")
@@ -158,3 +155,25 @@ class server:
         except KeyboardInterrupt:
             print("Cerrando conexión...")
             self.master.close()
+
+if __name__ == "__main__":        
+        server = server("localhost", 8000)
+
+        def suma(a, b):
+            return int(int(a) + int(b))
+
+        def concat(a, b):
+            return a + b
+
+        def find(a, b):
+            return a.find(b)
+        
+        def div(a,b):
+            return a/b
+
+        server.add_method(suma)
+        server.add_method(concat)
+        server.add_method(find)
+        server.add_method(div)
+        server.serve()
+

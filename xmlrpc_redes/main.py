@@ -12,10 +12,13 @@ if __name__ == "__main__":
 
     def find(a, b):
         return a.find(b)
-
+    
+    def div(a,b):
+        return a/b
 
     server.add_method(suma)
     server.add_method(concat)
     server.add_method(find)
+    server.add_method(div)
     server.serve()
 
