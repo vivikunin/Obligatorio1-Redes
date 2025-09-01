@@ -268,6 +268,9 @@ if __name__ == "__main__":
         server1.add_method(find)
         server1.add_method(div)
         server2.add_method(funcion_muy_complicada)
-        server1.serve()
-        server2.serve()
+        import threading
+        #### ESTO ES PARA QUE LOS SERVIDORES CORRAN EN HILOS SEPARADOS ####
+        threading.Thread(target=server1.serve, daemon=True).start()
+        threading.Thread(target=server2.serve, daemon=True).start()
+        input("Servidores corriendo. Presiona Enter para salir...\n")
 
