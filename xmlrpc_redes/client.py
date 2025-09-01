@@ -1,3 +1,4 @@
+from multiprocessing.dummy.connection import Client
 import socket
 import xml.etree.ElementTree as ET
 import datetime
@@ -7,7 +8,6 @@ class client:
 
     def __init__(self, address, port):
         self.connect(address, port)
-       
 
     def connect(self, address, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,6 +65,7 @@ class client:
         # 1. Construir el XML-RPC
         xml = self.build_xmlrpc_request(name, args)
         value_elem = self.enviar_y_recibir(xml)
+        print("SE LLEGO AL STUB")
         return value_elem
 
     def enviar_y_recibir(self, xml):
@@ -80,16 +81,19 @@ class client:
         data = b""
         while b"\r\n\r\n" not in data:
             resto = self.sock.recv(1024)
+            print("LLEGA RESPUESTA")
             if not resto:
                 break
             data += resto
-
         # Separa header y body
         header, _, body = data.partition(b"\r\n\r\n")
         header_str = header.decode("utf-8")
-        if "200 OK" not in header_str:
-            raise Exception("Respuesta HTTP no exitosa: " + header_str.splitlines()[0])
-        
+        try:
+            if "200 OK" not in header_str:
+                raise Exception("Respuesta HTTP no exitosa: " + header_str.splitlines()[0])
+        except Exception as e:
+            print(e)
+            self.master.close()
         # Busca Content-Length
         import re
         match = re.search(r"Content-Length: (\d+)", header_str)
@@ -98,33 +102,37 @@ class client:
         # Calcula cuántos bytes faltan del body
         body_bytes = body
         while len(body_bytes) < content_length:
-            resto = client.recv(1024)
+            resto = self.sock.recv(1024)
             if not resto:
                 break
             body_bytes += resto
 
         root = ET.fromstring(body_bytes.decode("utf-8"))
         fault_elem = root.find("fault")
-        if fault_elem is not None:
-            fault_value = fault_elem.find("value")
-            struct = fault_value.find("struct") if fault_value is not None else None
-            if struct is not None:
-                fault_code = None
-                fault_string = None
-                for member in struct.findall("member"):
-                    name = member.find("name").text
-                    val = member.find("value").text
-                    if name == "faultCode":
-                        fault_code = val
-                    elif name == "faultString":
-                        fault_string = val
-                raise Exception(f"XML-RPC Fault {fault_code}: {fault_string}")
+        try:
+            if fault_elem is not None:
+                fault_value = fault_elem.find("value")
+                struct = fault_value.find("struct") if fault_value is not None else None
+                if struct is not None:
+                    fault_code = None
+                    fault_string = None
+                    for member in struct.findall("member"):
+                        name = member.find("name").text
+                        val = member.find("value").text
+                        if name == "faultCode":
+                            fault_code = val
+                        elif name == "faultString":
+                            fault_string = val
+                    raise Exception(f"XML-RPC Fault {fault_code}: {fault_string}")
 
-        value_elem = root.find(".//value")
-        if value_elem is not None:
-            value_elem = self.extraer_value(value_elem)
-        return value_elem
-    
+            value_elem = root.find(".//value")
+            if value_elem is not None:
+                value_elem = self.extraer_value(value_elem)
+            return value_elem
+        except Exception as e:
+            print(e)
+            
+        
     def extraer_value(self,value_elem):
         int_elem = value_elem.find("int")
         if int_elem is not None:
@@ -159,8 +167,48 @@ class client:
         return value_elem.text
 
 if __name__ == "__main__":
-    cliente = client("localhost", 8000)
-    #response = cliente.suma(1, 2)
-    #print("Respuesta del servidor:", response)
-    response = cliente.suma(1)
-    print("Respuesta del servidor:", response)
+    try:
+        cliente = client("localhost", 8000)
+        #response = cliente.suma(1, 2)
+        #print("Respuesta del servidor:", response)
+        response = cliente.suma(1,3)
+        if response != None:
+            print("Respuesta del servidor:", response)
+        cliente = client("localhost", 8000)
+        response = cliente.suma(1,777)#############################  ES PORQUE NO ES PERSISTENTE  ################  PREGUNTAR  ##############
+        if response != None:
+            print("Respuesta del servidor:", response)
+
+        # Supongamos que la clase se llama Client
+        cliente = client("localhost", 8000)
+
+        # Parámetros de ejemplo
+        ejemplo_lista = [12, 5, 8, 20, 33]
+        ejemplo_dicc = {"a": 3, "b": 7, "c": 1}
+        ejemplo_numero = 4
+        ejemplo_texto = "Redes de computadoras"
+        ejemplo_bandera = True
+        ejemplo_fecha = datetime.datetime(2023, 10, 5)
+
+        # Llamada al procedimiento remoto
+        try:
+            response = cliente.funcion_muy_complicada(
+                ejemplo_lista,
+                ejemplo_dicc,
+                ejemplo_numero,
+                ejemplo_texto,
+                ejemplo_bandera,
+                ejemplo_fecha
+            )
+            if response is not None:
+                print("Respuesta del servidor:", response)
+            else:
+                print("El servidor no devolvió respuesta.")
+        except Exception as e:
+            print("Error al invocar el procedimiento remoto:", e)
+        
+
+    except KeyboardInterrupt:
+            print("Cerrando conexión...")
+            cliente.close()
+    

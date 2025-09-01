@@ -6,6 +6,37 @@ import xml.etree.ElementTree as ET
 import http_utils
 
 class server:
+    def xmlrpc_to_python(self, value_elem):
+        # Convierte un elemento <value> XMLRPC en el tipo Python correspondiente
+        import xml.etree.ElementTree as ET
+        if value_elem is None or len(value_elem) == 0:
+            return value_elem.text if value_elem is not None else None
+        child = value_elem[0]
+        tag = child.tag
+        if tag == "int" or tag == "i4":
+            return int(child.text)
+        elif tag == "double":
+            return float(child.text)
+        elif tag == "string":
+            return child.text
+        elif tag == "boolean":
+            return child.text == "1"
+        elif tag == "dateTime.iso8601":
+            from datetime import datetime
+            return datetime.strptime(child.text, "%Y%m%dT%H:%M:%S")
+        elif tag == "array":
+            data = child.find("data")
+            return [self.xmlrpc_to_python(val) for val in data.findall("value")]
+        elif tag == "struct":
+            result = {}
+            for member in child.findall("member"):
+                name = member.find("name").text
+                val = member.find("value")
+                result[name] = self.xmlrpc_to_python(val)
+            return result
+        else:
+            return child.text
+        
     def __init__(self, ip, puerto): 
         self.methods = {}
         self.master = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,7 +93,7 @@ class server:
             method = method_elem.text
             if method not in self.methods:
                 raise Exception("NO_METHOD")
-            params = [v[0].text for v in root.findall('params/param/value')]
+            params = [self.xmlrpc_to_python(v) for v in root.findall('params/param/value')]
             retorno = self.methods[method](*params)
         except ET.ParseError:
             faultCode = 1
@@ -84,38 +115,45 @@ class server:
         return body
 
     def definir_value(self, val):
-        value = ET.Element("value")
-        if type(val) == int:
-            tipo = ET.SubElement(value, "int")
-            tipo.text = str(val)
-        elif type(val) == float:
-            tipo = ET.SubElement(value, "double")
-            tipo.text = str(val)
-        elif type(val) == str:
-            tipo = ET.SubElement(value, "string")
-            tipo.text = val
-        elif type(val) == bool:
-            tipo = ET.SubElement(value, "boolean")
-            tipo.text = "1" if val else "0"
-        elif type(val) == datetime:
-            tipo = ET.SubElement(value, "dateTime.iso8601")
-            tipo.text = val.strftime("%Y%m%dT%H:%M:%S")
-        elif type(val) == list:
-            array = ET.SubElement(value, "array")
-            data = ET.SubElement(array, "data")
-            for item in val:
-                data.append(self.definir_value(item))
-        elif type(val) == dict:
-            struct = ET.SubElement(value, "struct")
-            for k, v in val.items():
-                member = ET.SubElement(struct, "member")
-                name = ET.SubElement(member, "name")
-                name.text = k
-                member.append(self.definir_value(v))
-        else:
-            tipo = ET.SubElement(value, "string")
-            tipo.text = str(val)
-        return value
+        stack = [(val, None)]
+        root_value = None
+        import xml.etree.ElementTree as ET
+        while stack:
+            current, parent = stack.pop()
+            value = ET.Element("value")
+            if isinstance(current, int):
+                tipo = ET.SubElement(value, "int")
+                tipo.text = str(current)
+            elif isinstance(current, float):
+                tipo = ET.SubElement(value, "double")
+                tipo.text = str(current)
+            elif isinstance(current, str):
+                tipo = ET.SubElement(value, "string")
+                tipo.text = current
+            elif isinstance(current, bool):
+                tipo = ET.SubElement(value, "boolean")
+                tipo.text = "1" if current else "0"
+            elif isinstance(current, datetime.datetime):
+                tipo = ET.SubElement(value, "dateTime.iso8601")
+                tipo.text = current.strftime("%Y%m%dT%H:%M:%S")
+            elif isinstance(current, list):
+                array = ET.SubElement(value, "array")
+                data = ET.SubElement(array, "data")
+                for item in current:
+                    data.append(self.definir_value(item))
+            elif isinstance(current, dict):
+                struct = ET.SubElement(value, "struct")
+                for k, v in current.items():
+                    member = ET.SubElement(struct, "member")
+                    name = ET.SubElement(member, "name")
+                    name.text = k
+                    member.append(self.definir_value(v))
+            else:
+                tipo = ET.SubElement(value, "string")
+                tipo.text = str(current)
+            if parent is None:
+                root_value = value
+        return root_value
 
     def build_xmlrpc_response(self, retorno, error=0, faultString=""):
         import xml.etree.ElementTree as ET
@@ -160,20 +198,71 @@ if __name__ == "__main__":
         server = server("localhost", 8000)
 
         def suma(a, b):
-            return int(int(a) + int(b))
+            return int(int(a) + int(b)), "Se sumo con exito"
 
         def concat(a, b):
             return a + b
 
         def find(a, b):
             return a.find(b)
-        
+
         def div(a,b):
             return a/b
+        
+        def funcion_muy_complicada(lista, dicc, numero, texto, bandera, fecha):
+                """
+                Ejecuta una serie de operaciones complejas sobre los parámetros recibidos.
+                - lista: lista de enteros
+                - dicc: diccionario con claves string y valores enteros
+                - numero: entero
+                - texto: string
+                - bandera: booleano
+                - fecha: objeto datetime
+                """
+                print(lista, dicc, numero, texto, bandera, fecha)
+                try:
+                    # 1. Filtra la lista usando el número y suma los elementos filtrados
+                    filtrados = [x for x in lista if x % numero == 0]
+                    suma_filtrados = sum(filtrados)
 
-        server.add_method(suma)
-        server.add_method(concat)
-        server.add_method(find)
-        server.add_method(div)
-        server.serve()
+                    # 2. Crea una nueva lista combinando los valores del diccionario y la suma anterior
+                    nueva_lista = list(dicc.values()) + [suma_filtrados]
+
+                    # 3. Manipula el texto: lo invierte, lo pone en mayúsculas y reemplaza vocales por "*"
+                    texto_modificado = texto[::-1].upper()
+                    for vocal in "AEIOU":
+                        texto_modificado = texto_modificado.replace(vocal, "*")
+
+                    # 4. Si la bandera es True, calcula el producto de todos los valores, si no, su promedio
+                    if bandera:
+                        producto = 1
+                        for val in nueva_lista:
+                            producto *= val if val != 0 else 1  # Evita multiplicar por cero
+                        resultado = producto
+                    else:
+                        resultado = sum(nueva_lista) / len(nueva_lista) if nueva_lista else 0
+
+                    # 5. Devuelve un diccionario con todos los resultados
+                    # 6. Usa la fecha para calcular días desde hoy
+                    from datetime import datetime
+                    hoy = datetime.now()
+                    dias_desde_fecha = (hoy - fecha).days if isinstance(fecha, datetime) else None
+                    return {
+                        "suma_filtrados": suma_filtrados,
+                        "texto_modificado": texto_modificado,
+                        "resultado_final": resultado,
+                        "elementos_filtrados": filtrados,
+                        "nueva_lista": nueva_lista,
+                        "dias_desde_fecha": dias_desde_fecha,
+                        "fecha_recibida": fecha.strftime('%Y-%m-%d %H:%M:%S') if hasattr(fecha, 'strftime') else str(fecha)
+                    }
+                except Exception as e:
+                    return {"error": str(e)}
+
+server.add_method(suma)
+server.add_method(concat)
+server.add_method(find)
+server.add_method(div)
+server.add_method(funcion_muy_complicada)
+server.serve()
 

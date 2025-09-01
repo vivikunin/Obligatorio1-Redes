@@ -5,7 +5,7 @@ if __name__ == "__main__":
     server = server("localhost", 8000)
 
     def suma(a, b):
-        return int(int(a) + int(b))
+        return int(int(a) + int(b)), "Se sumo con exito"
 
     def concat(a, b):
         return a + b

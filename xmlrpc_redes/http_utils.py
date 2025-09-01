@@ -45,7 +45,7 @@ import datetime
 def build_http_response(body, status_code: int = 200, status_message: str = "OK") -> bytes:
     status_line = f"HTTP/1.1 {status_code} {status_message}\r\n"
     # Construir los encabezados
-    print("body en build", body)
+    print("body en build", body) 
     headers = [
         "Connection: close",
         f"Content-Length: {len(body)}",
