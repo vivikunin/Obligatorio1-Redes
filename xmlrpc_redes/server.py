@@ -41,12 +41,14 @@ class server:
         self.methods = {}
         self.master = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.master.bind((ip, puerto))
-        self.master.listen()         
+        self.master.listen()
+        print("Servidor escuchando en {}:{}".format(ip, puerto))
 
     
     def atenderCliente(self, client):
         data = b""
         while b"\r\n\r\n" not in data:
+            print("Esperando datos del cliente...")
             resto = client.recv(1024)
             if not resto:
                 break
@@ -188,6 +190,7 @@ class server:
         try:
             while True:
                 client, address = self.master.accept()
+                print("Cliente conectado desde {}:{}".format(address[0], address[1]))
                 t = threading.Thread(target=self.atenderCliente, args=(client,))
                 t.start()
         except KeyboardInterrupt:
@@ -195,7 +198,8 @@ class server:
             self.master.close()
 
 if __name__ == "__main__":        
-        server = server("localhost", 8000)
+        server1 = server("localhost", 8000)
+        server2 = server("localhost", 8001)
 
         def suma(a, b):
             return int(int(a) + int(b)), "Se sumo con exito"
@@ -259,10 +263,11 @@ if __name__ == "__main__":
                 except Exception as e:
                     return {"error": str(e)}
 
-server.add_method(suma)
-server.add_method(concat)
-server.add_method(find)
-server.add_method(div)
-server.add_method(funcion_muy_complicada)
-server.serve()
+        server1.add_method(suma)
+        server1.add_method(concat)
+        server1.add_method(find)
+        server1.add_method(div)
+        server2.add_method(funcion_muy_complicada)
+        server1.serve()
+        server2.serve()
 

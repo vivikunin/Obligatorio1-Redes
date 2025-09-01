@@ -12,6 +12,7 @@ class client:
     def connect(self, address, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((address, port))
+        print("Conectado al servidor en {}:{}".format(address, port))
         return self
     
     def __getattr__(self, name):
@@ -65,7 +66,6 @@ class client:
         # 1. Construir el XML-RPC
         xml = self.build_xmlrpc_request(name, args)
         value_elem = self.enviar_y_recibir(xml)
-        print("SE LLEGO AL STUB")
         return value_elem
 
     def enviar_y_recibir(self, xml):
@@ -81,7 +81,6 @@ class client:
         data = b""
         while b"\r\n\r\n" not in data:
             resto = self.sock.recv(1024)
-            print("LLEGA RESPUESTA")
             if not resto:
                 break
             data += resto
@@ -180,7 +179,7 @@ if __name__ == "__main__":
             print("Respuesta del servidor:", response)
 
         # Supongamos que la clase se llama Client
-        cliente = client("localhost", 8000)
+        cliente = client("localhost", 8001)
 
         # Parámetros de ejemplo
         ejemplo_lista = [12, 5, 8, 20, 33]
