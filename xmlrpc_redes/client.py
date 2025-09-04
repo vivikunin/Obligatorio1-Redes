@@ -11,6 +11,7 @@ class client:
         self.connect(address, port)
 
     def connect(self, address, port):
+    #mpetdo para conectar el cliente al puerto y socket del servidor
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((address, port))
         print("Conectado al servidor en {}:{}".format(address, port))
@@ -20,6 +21,7 @@ class client:
         return lambda *args: self.stub(name, *args)
 
     def definir_value(self, val):
+    #identifica el tipo de dato dentro del mensaje xml en base a las etiquetas
         import xml.etree.ElementTree as ET
         import base64
         stack = [(val, None)]
@@ -75,13 +77,13 @@ class client:
         return ET.tostring(methodCall, encoding="utf-8", xml_declaration=True)
 
     def stub(self, name, *args):
-        # 1. Construir el XML-RPC
+        #Construir el XML-RPC
         xml = self.build_xmlrpc_request(name, args)
         value_elem = self.enviar_y_recibir(xml)
         return value_elem
 
     def enviar_y_recibir(self, xml):
-        # 2. Enviar la solicitud
+        # Enviar la solicitud
         mensaje = http_utils.build_http_post_request("/", "localhost:8000", xml.decode())
         total_sent = 0
         while total_sent < len(mensaje):
@@ -89,7 +91,7 @@ class client:
             if remain == 0:
                 raise RuntimeError("Socket connection broken")
             total_sent += remain   
-        # 3. Recibir la respuesta completa
+        # Recibir la respuesta completa
         data = b""
         while b"\r\n\r\n" not in data:
             resto = self.sock.recv(1024)
@@ -145,6 +147,7 @@ class client:
             
         
     def extraer_value(self, value_elem):
+        # Extrae el valor de un elemento <value> XML-RPC
         int_elem = value_elem.find("int")
         if int_elem is not None:
             return int(int_elem.text)
@@ -182,78 +185,8 @@ class client:
         return value_elem.text
     
     def close(self):
+        # Cierra la conexión con el servidor
         if hasattr(self, "sock"):
             self.sock.close()
             print("Socket del cliente cerrado correctamente.")
 
-if __name__ == "__main__":
-    try:
-        cliente = client("localhost", 8000)
-        #response = cliente.suma(1, 2)
-        #print("Respuesta del servidor:", response)
-        response = cliente.suma(1,3)
-        if response != None:
-            print("Respuesta del servidor:", response)
-        cliente = client("localhost", 8000)
-        response = cliente.suma(1,777)
-        if response != None:
-            print("Respuesta del servidor:", response)
-
-        # Supongamos que la clase se llama Client
-        cliente = client("localhost", 8001)
-
-        # Parámetros de ejemplo
-        ejemplo_lista = [12, 5, 8, 20, 33]
-        ejemplo_dicc = {"a": 3, "b": 7, "c": 1}
-        ejemplo_numero = 4
-        ejemplo_texto = "Redes de computadoras"
-        ejemplo_bandera = True
-        ejemplo_fecha = datetime.datetime(2023, 10, 5)
-
-        # Llamada al procedimiento remoto
-        try:
-            response = cliente.funcion_muy_complicada(
-                ejemplo_lista,
-                ejemplo_dicc,
-                ejemplo_numero,
-                ejemplo_texto,
-                ejemplo_bandera,
-                ejemplo_fecha
-            )
-            if response is not None:
-                print("Respuesta del servidor:", response)
-            else:
-                print("El servidor no devolvió respuesta.")
-        except Exception as e:
-            print("Error al invocar el procedimiento remoto:", e)
-        
-        cliente = client("localhost", 8001)
-        lista = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        try:
-            resultado = cliente.estadisticas_lista(lista)
-            print("Resultado estadisticas_lista:", resultado)
-        except Exception as e:
-            print("Error:", e)
-
-        cliente = client("localhost", 8001)
-        # Parámetros: a, b, c, x0, lr, epochs
-        try:
-            resultado = cliente.gradient_descent(1, -2, 1, 0, 0.1, 10)
-            print("Resultado gradient_descent:", resultado)
-        except Exception as e:
-            print("Error:", e)
-
-        cliente = client("localhost", 8001)
-        try:
-            import base64
-            data = b"Hola, esto es binario!"
-            resultado = cliente.echo_base64("123")
-            if resultado is not None:
-                print(resultado)
-        except Exception as e:
-            print("Error:", e)
-
-    except KeyboardInterrupt:
-            print("Cerrando conexión...")
-            cliente.close()
-            

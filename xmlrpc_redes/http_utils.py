@@ -35,9 +35,9 @@ import datetime
 	    Crea una respuesta HTTP/1.1 completa con los encabezados especificados y un cuerpo.
 	
 	    Args:
-	        body_content (str): El contenido del cuerpo de la respuesta (ej. el XML-RPC).
-	        status_code (int): El código de estado HTTP (ej. 200, 404).
-	        status_message (str): El mensaje de estado asociado al código (ej. "OK", "Not Found").
+	        body_content (str): El contenido del cuerpo de la respuesta.
+	        status_code (int): El código de estado HTTP.
+	        status_message (str): El mensaje de estado asociado al código.
 	
 	    Returns:
 	        bytes: La respuesta HTTP completa lista para ser enviada a través de un socket.
@@ -55,7 +55,7 @@ def build_http_response(body, status_code: int = 200, status_message: str = "OK"
     ]
     headers_block = "\r\n".join(headers) + "\r\n\r\n" # Doble \r\n al final para separar encabezados del cuerpo
 
-    # Unir todo
+    # Unir respuesta completa
     full_response = status_line + headers_block
     full_response_bytes = full_response.encode('utf-8') + body
 
