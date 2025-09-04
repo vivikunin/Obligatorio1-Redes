@@ -20,38 +20,49 @@ class client:
         return lambda *args: self.stub(name, *args)
 
     def definir_value(self, val):
+        import xml.etree.ElementTree as ET
+        import base64
+        stack = [(val, None)]
+        root_value = None
+        while stack:
+            current, parent = stack.pop()
             value = ET.Element("value")
-            if type(val) == int:
+            if isinstance(current, int):
                 tipo = ET.SubElement(value, "int")
-                tipo.text = str(val)
-            elif type(val) == float:
+                tipo.text = str(current)
+            elif isinstance(current, float):
                 tipo = ET.SubElement(value, "double")
-                tipo.text = str(val)
-            elif type(val) == str:
+                tipo.text = str(current)
+            elif isinstance(current, str):
                 tipo = ET.SubElement(value, "string")
-                tipo.text = val
-            elif type(val) == bool:
+                tipo.text = current
+            elif isinstance(current, bool):
                 tipo = ET.SubElement(value, "boolean")
-                tipo.text = "1" if val else "0"
-            elif type(val) == datetime:
+                tipo.text = "1" if current else "0"
+            elif isinstance(current, datetime.datetime):
                 tipo = ET.SubElement(value, "dateTime.iso8601")
-                tipo.text = val.strftime("%Y%m%dT%H:%M:%S")
-            elif type(val) == list:
+                tipo.text = current.strftime("%Y%m%dT%H:%M:%S")
+            elif isinstance(current, bytes):
+                tipo = ET.SubElement(value, "base64")
+                tipo.text = base64.b64encode(current).decode("ascii")
+            elif isinstance(current, list):
                 array = ET.SubElement(value, "array")
                 data = ET.SubElement(array, "data")
-                for item in val:
+                for item in current:
                     data.append(self.definir_value(item))
-            elif type(val) == dict:
+            elif isinstance(current, dict):
                 struct = ET.SubElement(value, "struct")
-                for k, v in val.items():
+                for k, v in current.items():
                     member = ET.SubElement(struct, "member")
                     name = ET.SubElement(member, "name")
                     name.text = k
                     member.append(self.definir_value(v))
             else:
                 tipo = ET.SubElement(value, "string")
-                tipo.text = str(val)
-            return value
+                tipo.text = str(current)
+            if parent is None:
+                root_value = value
+        return root_value
 
     def build_xmlrpc_request(self, metodo, params):
         methodCall = ET.Element("methodCall")
@@ -133,7 +144,7 @@ class client:
             print(e)
             
         
-    def extraer_value(self,value_elem):
+    def extraer_value(self, value_elem):
         int_elem = value_elem.find("int")
         if int_elem is not None:
             return int(int_elem.text)
@@ -151,7 +162,11 @@ class client:
             return bool(int(boolean_elem.text))
         date_elem = value_elem.find("dateTime.iso8601")
         if date_elem is not None:
-            return datetime.strptime(date_elem.text, "%Y%m%dT%H:%M:%S")
+            return datetime.datetime.strptime(date_elem.text, "%Y%m%dT%H:%M:%S")
+        base64_elem = value_elem.find("base64")
+        if base64_elem is not None:
+            import base64
+            return base64.b64decode(base64_elem.text)
         array_elem = value_elem.find("array")
         if array_elem is not None:
             data_elem = array_elem.find("data")
@@ -180,7 +195,7 @@ if __name__ == "__main__":
         if response != None:
             print("Respuesta del servidor:", response)
         cliente = client("localhost", 8000)
-        response = cliente.suma(1,777)#############################  ES PORQUE NO ES PERSISTENTE  ################  PREGUNTAR  ##############
+        response = cliente.suma(1,777)
         if response != None:
             print("Respuesta del servidor:", response)
 
@@ -227,6 +242,17 @@ if __name__ == "__main__":
             print("Resultado gradient_descent:", resultado)
         except Exception as e:
             print("Error:", e)
+
+        cliente = client("localhost", 8001)
+        try:
+            import base64
+            data = b"Hola, esto es binario!"
+            resultado = cliente.echo_base64("123")
+            if resultado is not None:
+                print(resultado)
+        except Exception as e:
+            print("Error:", e)
+
     except KeyboardInterrupt:
             print("Cerrando conexión...")
             cliente.close()

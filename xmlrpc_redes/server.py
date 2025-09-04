@@ -1,3 +1,4 @@
+import base64
 import datetime
 from itertools import repeat
 import socket
@@ -34,6 +35,9 @@ class server:
                 val = member.find("value")
                 result[name] = self.xmlrpc_to_python(val)
             return result
+        elif tag == "base64":
+            import base64
+            return base64.b64decode(child.text)
         else:
             return child.text
         
@@ -298,6 +302,21 @@ if __name__ == "__main__":
                 "pares": [x for x in lista if x % 2 == 0],
                 "impares": [x for x in lista if x % 2 != 0]
             }
+        
+        def echo_base64(data_bin):
+            """
+            Recibe datos binarios (base64) y los devuelve como string y como binario.
+            - data_bin: bytes (el cliente debe enviar un parámetro tipo bytes)
+            Devuelve un diccionario con la longitud, el string base64 y los primeros bytes.
+            """
+            import base64
+            base64_str = base64.b64encode(data_bin).decode("ascii")
+            return {
+                "base64_str": base64_str,
+                "longitud": len(data_bin),
+                "primeros_10_bytes": list(data_bin[:10])
+            }
+            
 
         server1.add_method(suma)
         server1.add_method(concat)
@@ -305,7 +324,8 @@ if __name__ == "__main__":
         server1.add_method(div)
         server2.add_method(funcion_muy_complicada)
         server2.add_method(gradient_descent)
-        server2.add_method(estadisticas_lista)
+        server2.add_method(estadisticas_lista) 
+        server2.add_method(echo_base64)
 
         import threading
         #### ESTO ES PARA QUE LOS SERVIDORES CORRAN EN HILOS SEPARADOS ####
