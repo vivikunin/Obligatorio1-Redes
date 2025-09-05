@@ -29,7 +29,10 @@ class client:
         while stack:
             current, parent = stack.pop()
             value = ET.Element("value")
-            if isinstance(current, int):
+            if isinstance(current, bool):
+                tipo = ET.SubElement(value, "boolean")
+                tipo.text = "1" if current else "0"
+            elif isinstance(current, int):
                 tipo = ET.SubElement(value, "int")
                 tipo.text = str(current)
             elif isinstance(current, float):
@@ -38,9 +41,6 @@ class client:
             elif isinstance(current, str):
                 tipo = ET.SubElement(value, "string")
                 tipo.text = current
-            elif isinstance(current, bool):
-                tipo = ET.SubElement(value, "boolean")
-                tipo.text = "1" if current else "0"
             elif isinstance(current, datetime.datetime):
                 tipo = ET.SubElement(value, "dateTime.iso8601")
                 tipo.text = current.strftime("%Y%m%dT%H:%M:%S")
