@@ -173,9 +173,10 @@ class client:
 
 if __name__ == "__main__":
     try:
-        cliente = client("localhost", 8000)
+        ##cliente = client("localhost", 8000)
         #response = cliente.suma(1, 2)
         #print("Respuesta del servidor:", response)
+        '''
         response = cliente.suma(1,3)
         if response != None:
             print("Respuesta del servidor:", response)
@@ -183,18 +184,42 @@ if __name__ == "__main__":
         response = cliente.suma(1,777)#############################  ES PORQUE NO ES PERSISTENTE  ################  PREGUNTAR  ##############
         if response != None:
             print("Respuesta del servidor:", response)
-
+        '''
         # Supongamos que la clase se llama Client
         cliente = client("localhost", 8001)
+        cliente_segundo = client("localhost", 8001)
 
-        # Parámetros de ejemplo
         ejemplo_lista = [12, 5, 8, 20, 33]
         ejemplo_dicc = {"a": 3, "b": 7, "c": 1}
         ejemplo_numero = 4
         ejemplo_texto = "Redes de computadoras"
         ejemplo_bandera = True
         ejemplo_fecha = datetime.datetime(2023, 10, 5)
+        
+        def llamar_suma(cliente, a, b):
+            try:
+                resultado = cliente.suma(a, b)
+                print(f"Resultado suma({a}, {b}):", resultado)
+            except Exception as e:
+                print("Error:", e)
 
+        def llamar_funcion_muy_complicada(client, lista, diccionario, numero, texto, bandera, fecha):
+            try:
+                resultado = client.funcion_muy_complicada(lista, diccionario, numero, texto, bandera, fecha)
+                print("Resultado funcion_muy_complicada:", resultado)
+            except Exception as e:
+                print("Error:", e)
+
+        import threading
+        
+        threading.Thread(target=llamar_suma, args=(cliente, 1, 2)).start()
+        threading.Thread(target=llamar_funcion_muy_complicada, args=(cliente_segundo, ejemplo_lista, ejemplo_dicc, ejemplo_numero, ejemplo_texto, ejemplo_bandera, ejemplo_fecha), daemon=True).start()
+        while True:
+            pass
+
+            
+        # Parámetros de ejemplo
+        '''
         # Llamada al procedimiento remoto
         try:
             response = cliente.funcion_muy_complicada(
@@ -220,7 +245,7 @@ if __name__ == "__main__":
         except Exception as e:
             print("Error:", e)
 
-        cliente = client("localhost", 8001)
+        #cliente = client("localhost", 8001)
         # Parámetros: a, b, c, x0, lr, epochs
         try:
             resultado = cliente.gradient_descent(1, -2, 1, 0, 0.1, 10)
@@ -230,4 +255,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
             print("Cerrando conexión...")
             cliente.close()
-            
+        '''
+
+    except Exception as e:
+        print("Error:", e)

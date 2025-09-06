@@ -307,6 +307,8 @@ if __name__ == "__main__":
         server2.add_method(gradient_descent)
         server2.add_method(estadisticas_lista)
 
+        server2.add_method(suma)
+
         import threading
         #### ESTO ES PARA QUE LOS SERVIDORES CORRAN EN HILOS SEPARADOS ####
         threading.Thread(target=server1.serve, daemon=True).start()
