@@ -1,3 +1,4 @@
+import time
 from client import *
 
 if __name__ == "__main__":
@@ -82,6 +83,7 @@ if __name__ == "__main__":
 
         #prueba de otros errores
         cliente = client("localhost", 8001)
+        time.sleep(6)
         try:
             resultado = cliente.funcion_otro_error()
             if resultado is not None:

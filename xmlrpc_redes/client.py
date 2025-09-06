@@ -10,11 +10,19 @@ class client:
     def __init__(self, address, port):
         self.connect(address, port)
 
-    def connect(self, address, port):
-    #mpetdo para conectar el cliente al puerto y socket del servidor
+    def connect(self, address, port, timeout=5):
+        # Método para conectar el cliente al puerto y socket del servidor con timeout
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((address, port))
-        print("Conectado al servidor en {}:{}".format(address, port))
+        self.sock.settimeout(timeout)
+        try:
+            self.sock.connect((address, port))
+            print("Conectado al servidor en {}:{}".format(address, port))
+        except socket.timeout:
+            print(f"Timeout al conectar con el servidor en {address}:{port}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error al conectar: {e}")
+            sys.exit(1)
         return self
     
     def __getattr__(self, name):
@@ -82,47 +90,42 @@ class client:
         value_elem = self.enviar_y_recibir(xml)
         return value_elem
 
-    def enviar_y_recibir(self, xml):
-        # Enviar la solicitud
-        mensaje = http_utils.build_http_post_request("/", "localhost:8000", xml.decode())
-        total_sent = 0
-        while total_sent < len(mensaje):
-            remain = self.sock.send(mensaje[total_sent:].encode('utf-8'))
-            if remain == 0:
-                raise RuntimeError("Socket connection broken")
-            total_sent += remain   
-        # Recibir la respuesta completa
-        data = b""
-        while b"\r\n\r\n" not in data:
-            resto = self.sock.recv(1024)
-            if not resto:
-                break
-            data += resto
-        # Separa header y body
-        header, _, body = data.partition(b"\r\n\r\n")
-        header_str = header.decode("utf-8")
+    def enviar_y_recibir(self, xml, timeout=5):
+        # Enviar la solicitud y recibir respuesta con manejo de timeout
+        self.sock.settimeout(timeout)
         try:
+            mensaje = http_utils.build_http_post_request("/", "localhost:8000", xml.decode())
+            total_sent = 0
+            while total_sent < len(mensaje):
+                remain = self.sock.send(mensaje[total_sent:].encode('utf-8'))
+                if remain == 0:
+                    raise RuntimeError("Socket connection broken")
+                total_sent += remain
+            # Recibir la respuesta completa
+            data = b""
+            while b"\r\n\r\n" not in data:
+                resto = self.sock.recv(1024)
+                if not resto:
+                    break
+                data += resto
+            # Separa header y body
+            header, _, body = data.partition(b"\r\n\r\n")
+            header_str = header.decode("utf-8")
             if "200 OK" not in header_str:
                 raise Exception("Respuesta HTTP no exitosa: " + header_str.splitlines()[0])
-        except Exception as e:
-            print(e)
-            self.master.close()
-        # Busca Content-Length
-        import re
-        match = re.search(r"Content-Length: (\d+)", header_str)
-        content_length = int(match.group(1)) if match else 0
-
-        # Calcula cuántos bytes faltan del body
-        body_bytes = body
-        while len(body_bytes) < content_length:
-            resto = self.sock.recv(1024)
-            if not resto:
-                break
-            body_bytes += resto
-
-        root = ET.fromstring(body_bytes.decode("utf-8"))
-        fault_elem = root.find("fault")
-        try:
+            # Busca Content-Length
+            import re
+            match = re.search(r"Content-Length: (\d+)", header_str)
+            content_length = int(match.group(1)) if match else 0
+            # Calcula cuántos bytes faltan del body
+            body_bytes = body
+            while len(body_bytes) < content_length:
+                resto = self.sock.recv(1024)
+                if not resto:
+                    break
+                body_bytes += resto
+            root = ET.fromstring(body_bytes.decode("utf-8"))
+            fault_elem = root.find("fault")
             if fault_elem is not None:
                 fault_value = fault_elem.find("value")
                 struct = fault_value.find("struct") if fault_value is not None else None
@@ -137,14 +140,18 @@ class client:
                         elif name == "faultString":
                             fault_string = val
                     raise Exception(f"XML-RPC Fault {fault_code}: {fault_string}")
-
             value_elem = root.find(".//value")
             if value_elem is not None:
                 value_elem = self.extraer_value(value_elem)
             return value_elem
+        except socket.timeout:
+            print("Se agotó el tiempo de espera para la operación de envío/recepción.")
+            self.close()
+            return None
         except Exception as e:
-            print(e)
-            
+            print(f"No se pudo enviar el mensaje")
+            self.close()
+            return None
         
     def extraer_value(self, value_elem):
         # Extrae el valor de un elemento <value> XML-RPC

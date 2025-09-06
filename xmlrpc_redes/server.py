@@ -50,43 +50,47 @@ class server:
 
     
     def atenderCliente(self, client):
-        data = b""
-        while b"\r\n\r\n" not in data:
-            print("Esperando datos del cliente...")
-            resto = client.recv(1024)
-            if not resto:
-                break
-            data += resto
+        try:
+            data = b""
+            while b"\r\n\r\n" not in data:
+                print("Esperando datos del cliente...")
+                resto = client.recv(1024)
+                if not resto:
+                    break
+                data += resto
 
-        # Separa header y body
-        header, _, body = data.partition(b"\r\n\r\n")
-        header_str = header.decode("utf-8")
+            # Separa header y body
+            header, _, body = data.partition(b"\r\n\r\n")
+            header_str = header.decode("utf-8")
 
-        # Busca Content-Length
-        import re
-        match = re.search(r"Content-Length: (\d+)", header_str)
-        content_length = int(match.group(1)) if match else 0
+            # Busca Content-Length
+            import re
+            match = re.search(r"Content-Length: (\d+)", header_str)
+            content_length = int(match.group(1)) if match else 0
 
-        # Calcula cuántos bytes faltan del body
-        body_bytes = body
-        while len(body_bytes) < content_length:
-            resto = client.recv(1024)
-            if not resto:
-                break
-            body_bytes += resto
+            # Calcula cuántos bytes faltan del body
+            body_bytes = body
+            while len(body_bytes) < content_length:
+                resto = client.recv(1024)
+                if not resto:
+                    break
+                body_bytes += resto
 
-        # Reconstruye el mensaje completo
-        full_message = header + b"\r\n\r\n" + body_bytes
+            # Reconstruye el mensaje completo
+            full_message = header + b"\r\n\r\n" + body_bytes
 
-        info = http_utils.parse_http_response(full_message.decode("utf-8"))
-        response = self.stub(info[2],client)
-        data = http_utils.build_http_response(response)
-        total_sent = 0
-        while total_sent < len(data):
-            remain = client.send(data[total_sent:])
-            if remain == 0:
-                raise RuntimeError("Socket connection broken")
-            total_sent += remain    
+            info = http_utils.parse_http_response(full_message.decode("utf-8"))
+            response = self.stub(info[2],client)
+            data = http_utils.build_http_response(response)
+            total_sent = 0
+            while total_sent < len(data):
+                remain = client.send(data[total_sent:])
+                if remain == 0:
+                    raise RuntimeError("Socket connection broken")
+                total_sent += remain    
+        except socket.timeout:
+            print("Timeout esperando datos del cliente.")
+            client.close()
 
     def stub(self, data, client):
         #Hace el demarshalling del mensaje y arma la respuesta xml.
@@ -200,6 +204,7 @@ class server:
         try:
             while True:
                 client, address = self.master.accept()
+                client.settimeout(5)
                 print("Cliente conectado desde {}:{}".format(address[0], address[1]))
                 t = threading.Thread(target=self.atenderCliente, args=(client,))
                 t.start()
