@@ -48,7 +48,7 @@ if __name__ == "__main__":
         cliente = client("150.150.0.2", 8001)
         lista = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         try:
-            resultado = cliente.estadisticas_lista(lista)
+            resultado = cliente.estadisticas_lista(lista, "prueba")
             print("Resultado estadisticas_lista:", resultado)
         except Exception as e:
             print("Error:", e)

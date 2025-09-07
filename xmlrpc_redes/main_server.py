@@ -90,12 +90,12 @@ if __name__ == "__main__":
             "historial_x": history
         }
 
-    def estadisticas_lista(lista):
+    def estadisticas_lista(lista, nombrelista):
         """
-        Recibe una lista de números y devuelve un diccionario con estadísticas básicas.
+        Recibe una lista de números con su nombre y devuelve un diccionario con estadísticas básicas.
         """
         if not lista:
-            return {"error": "Lista vacía"}
+            return {"error": f"La lista '{nombrelista}' está vacía"}
         return {
             "min": min(lista),
             "max": max(lista),
@@ -104,6 +104,7 @@ if __name__ == "__main__":
             "pares": [x for x in lista if x % 2 == 0],
             "impares": [x for x in lista if x % 2 != 0]
         }
+    
     #funcion con error interno de ejecucion
     def funcion_con_error_interno():
         raise RuntimeError("Error interno forzado para prueba")
