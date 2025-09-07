@@ -149,7 +149,10 @@ class client:
             self.close()
             return None
         except Exception as e:
-            print(f"No se pudo enviar el mensaje" + str(e))
+            if str(e) == "list index out of range":
+                print("Error: El servidor cerró la conexión inesperadamente.")
+            else:
+                print(f"No se pudo enviar el mensaje: {e}")
             self.close()
             return None
         
