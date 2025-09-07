@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
 
         
-    ##Agregar los métodos a cada server
+    #Agregar los métodos a cada server
     server1.add_method(suma)
     server1.add_method(concat)
     server1.add_method(find)
@@ -125,11 +125,10 @@ if __name__ == "__main__":
     server2.add_method(funcion_con_error_interno)
     server2.add_method(funcion_otro_error)
 
+    #Creamos threads para que los servers corran en paralelo
     import threading
     threading.Thread(target=server1.serve, daemon=True).start()
     threading.Thread(target=server2.serve, daemon=True).start()
-    #### ESTO ES PARA QUE LOS SERVIDORES CORRAN EN HILOS SEPARADOS ####
-    #input("Servidores corriendo. Presiona Enter para salir...\n")
     while True:
         pass
 

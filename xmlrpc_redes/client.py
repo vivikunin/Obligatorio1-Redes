@@ -19,9 +19,11 @@ class client:
             print("Conectado al servidor en {}:{}".format(address, port))
         except socket.timeout:
             print(f"Timeout al conectar con el servidor en {address}:{port}")
+            self.close()
             sys.exit(1)
         except Exception as e:
             print(f"Error al conectar: {e}")
+            self.close()
             sys.exit(1)
         return self
     

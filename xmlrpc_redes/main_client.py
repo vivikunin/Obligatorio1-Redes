@@ -90,9 +90,6 @@ if __name__ == "__main__":
                 print("Resultado prueba otro error:", resultado)
         except Exception as e:
             print("Error:", e)
-
-            
-
     except KeyboardInterrupt:
             print("Cerrando conexión...")
             cliente.close()
