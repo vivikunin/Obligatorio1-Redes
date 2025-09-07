@@ -149,7 +149,7 @@ class client:
             self.close()
             return None
         except Exception as e:
-            print(f"No se pudo enviar el mensaje")
+            print(f"No se pudo enviar el mensaje" + str(e))
             self.close()
             return None
         
