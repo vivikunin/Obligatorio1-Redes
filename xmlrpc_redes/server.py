@@ -90,8 +90,9 @@ class server:
                 total_sent += remain  
         except socket.timeout:
             print("Timeout esperando datos del cliente.")
+        except Exception as e:
+            print(f"Error inesperado: {e}")
         finally:
-            client.shutdown(socket.SHUT_RDWR)
             client.close()
 
     def stub(self, data, client):

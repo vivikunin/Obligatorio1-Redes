@@ -21,11 +21,14 @@ class client:
         except socket.timeout:
             print(f"Timeout al conectar con el servidor en {address}:{port}")
             self.close()
-            sys.exit(1)
+            raise
         except Exception as e:
             print(f"Error al conectar: {e}")
             self.close()
-            sys.exit(1)
+            raise
+        except KeyboardInterrupt as e:
+            self.close()
+            raise
         return self
     
     def __getattr__(self, name):
