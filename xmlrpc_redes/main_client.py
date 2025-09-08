@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
         #prueba de echo
         cliente = client('150.150.0.2', 8000)
-        texto_largo = texto_largo = "palabra " * 20000  # Genera un string de 20.000 palabras
+        texto_largo = "palabra " * 20000  # Genera un string de 20.000 palabras
         try:
             resultado = cliente.echo(texto_largo)
             print("Echo recibido:", resultado == texto_largo)
