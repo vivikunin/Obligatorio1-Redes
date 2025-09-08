@@ -1,10 +1,8 @@
 from multiprocessing.dummy.connection import Client
 import socket
-import sys
 import xml.etree.ElementTree as ET
 import datetime
 import http_utils
-import select
 
 class client:
 

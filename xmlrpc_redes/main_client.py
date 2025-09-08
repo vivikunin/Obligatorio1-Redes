@@ -1,5 +1,6 @@
 import time
 from client import *
+import lorem_text 
 
 if __name__ == "__main__":
     try:
@@ -13,6 +14,33 @@ if __name__ == "__main__":
         #suma con parámetros incorrectos
         cliente = client('150.150.0.2', 8000)
         response = cliente.suma(177)
+        if response != None:
+            print("Respuesta del servidor:", response)
+
+        #division entre 0
+        cliente = client('150.150.0.2', 8000)
+        response = cliente.division(1, 0)
+        if response != None:
+            print("Respuesta del servidor:", response)
+
+        #prueba de echo
+        cliente = client('150.150.0.2', 8000)
+        texto_largo = lorem_text.words(20000)
+        try:
+            resultado = cliente.echo(texto_largo)
+            print("Echo recibido:", resultado == texto_largo)
+        except Exception as e:
+            print("Error en echo:", e)
+
+        #método sin parámetros y que retorna un único valor
+        cliente = client('150.150.0.2', 8000)
+        response = cliente.refran()
+        if response != None:
+            print("Respuesta del servidor:", response)
+
+        #método con parámetros entero y string y que retorna un único valor
+        cliente = client('150.150.0.2', 8000)
+        response = cliente.concat(1, "2")
         if response != None:
             print("Respuesta del servidor:", response)
 
@@ -64,7 +92,6 @@ if __name__ == "__main__":
 
         #prueba de método inexistente
         cliente = client("100.100.0.2", 8001)
-        # Parámetros: a, b, c, x0, lr, epochs
         try:
             resultado = cliente.metodo_inexistente(1, -2, 1, 0, 0.1, 10)
             if resultado != None:
@@ -90,44 +117,18 @@ if __name__ == "__main__":
                 print("Resultado prueba otro error:", resultado)
         except Exception as e:
             print("Error:", e)
+
+        #prueba metodo lento
+        cliente = client("100.100.0.2", 8001)
+        try:
+            resultado = cliente.metodo_lento()
+            if resultado is not None:
+                print("Resultado prueba metodo lento:", resultado)
+        except Exception as e:
+            print("Error:", e)
+
+            
     except KeyboardInterrupt:
             print("Cerrando conexión...")
             cliente.close()
 
-      #PODRÍAMOS ELIMINAR      
-"""cliente = client("localhost", 8001)
-
-        # Parámetros de ejemplo
-        ejemplo_lista = [12, 5, 8, 20, 33]
-        ejemplo_dicc = {"a": 3, "b": 7, "c": 1}
-        ejemplo_numero = 4
-        ejemplo_texto = "Redes de computadoras"
-        ejemplo_bandera = True
-        ejemplo_fecha = datetime.datetime(2023, 10, 5)
-
-        # Llamada al procedimiento remoto
-        try:
-            response = cliente.funcion_muy_complicada(
-                ejemplo_lista,
-                ejemplo_dicc,
-                ejemplo_numero,
-                ejemplo_texto,
-                ejemplo_bandera,
-                ejemplo_fecha
-            )
-            if response is not None:
-                print("Respuesta del servidor:", response)
-            else:
-                print("El servidor no devolvió respuesta.")
-        except Exception as e:
-            print("Error al invocar el procedimiento remoto:", e)
-        """
-""" cliente = client("localhost", 8001)
-        try:
-            import base64
-            data = b"Hola, esto es binario!"
-            resultado = cliente.echo_base64("123")
-            if resultado is not None:
-                print(resultado)
-        except Exception as e:
-            print("Error:", e)"""

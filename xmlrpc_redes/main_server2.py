@@ -99,7 +99,10 @@ if __name__ == "__main__":
     def funcion_otro_error():
         raise ValueError("Error inesperado para prueba de faultCode 5")
 
-
+    def metodo_lento():
+        import time
+        time.sleep(10)
+        return "Método lento completado"
         
     #Agregar los métodos al server
     server2.add_method(funcion_muy_complicada)
@@ -107,7 +110,7 @@ if __name__ == "__main__":
     server2.add_method(estadisticas_lista)
     server2.add_method(funcion_con_error_interno)
     server2.add_method(funcion_otro_error)
-
+    server2.add_method(metodo_lento)
     server2.serve()
 
  
