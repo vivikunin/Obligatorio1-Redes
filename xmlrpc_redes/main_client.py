@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
         #Prueba de funcion_muy_complicada para probar correcto manejo de todos los parámetros
         import datetime
-        cliente = client("150.150.0.2", 8001)
+        cliente = client("100.100.0.2", 8001)
         # Parámetros de ejemplo para cada tipo XML-RPC
         ejemplo_entero = 42
         ejemplo_doble = 3.14
@@ -45,7 +45,7 @@ if __name__ == "__main__":
             print("Error:", e)
 
         #prueba de manejo de parámetros de lista
-        cliente = client("150.150.0.2", 8001)
+        cliente = client("100.100.0.2", 8001)
         lista = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         try:
             resultado = cliente.estadisticas_lista(lista, "prueba")
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             print("Error:", e)
 
         #prueba de método inexistente
-        cliente = client("150.150.0.2", 8001)
+        cliente = client("100.100.0.2", 8001)
         # Parámetros: a, b, c, x0, lr, epochs
         try:
             resultado = cliente.metodo_inexistente(1, -2, 1, 0, 0.1, 10)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             print("Error:", e)
 
         #prueba de error interno de ejecucion
-        cliente = client("150.150.0.2", 8001)
+        cliente = client("100.100.0.2", 8001)
         try:
             resultado = cliente.funcion_con_error_interno()
             if resultado != None:
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             print("Error:", e)
 
         #prueba de otros errores
-        cliente = client("150.150.0.2", 8001)
+        cliente = client("100.100.0.2", 8001)
         time.sleep(6)
         try:
             resultado = cliente.funcion_otro_error()

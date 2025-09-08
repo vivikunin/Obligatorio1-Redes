@@ -4,6 +4,7 @@ import sys
 import xml.etree.ElementTree as ET
 import datetime
 import http_utils
+import select
 
 class client:
 
@@ -94,20 +95,50 @@ class client:
         #Construir el XML-RPC
         xml = self.build_xmlrpc_request(name, args)
         value_elem = self.enviar_y_recibir(xml)
-        self.close()
         return value_elem
 
     def enviar_y_recibir(self, xml, timeout=5):
         # Enviar la solicitud y recibir respuesta con manejo de timeout
-        self.sock.settimeout(timeout)
+        #self.sock.settimeout(timeout)   
         try:
             mensaje = http_utils.build_http_post_request("/", self.host, xml.decode())
             total_sent = 0
+            
+            '''
+            r, _, _ = select.select([self.sock], [], [], 0)
+            if r:
+                try:
+                    peek = self.sock.recv(1, socket.MSG_PEEK)
+                    if peek == b"":
+                        raise ConnectionError("El servidor ya cerró la conexión (FIN recibido).")
+                except BlockingIOError:
+                    pass
+            '''
+            self.sock.settimeout(0.1)
+            try:
+                test = self.sock.recv(1)
+                if test == b'':
+                    print("Conexión cerrada por el servidor antes de enviar.")
+                    #self.close()
+                    return None
+            except (BlockingIOError, socket.timeout):
+                pass  # No hay datos, la conexión sigue abierta
+
+            # Timeout normal para la operación
+            self.sock.settimeout(timeout)
+
+            import time
             while total_sent < len(mensaje):
-                remain = self.sock.send(mensaje[total_sent:].encode('utf-8'))
-                if remain == 0:
-                    raise RuntimeError("Socket connection broken")
-                total_sent += remain
+                try: 
+                    time.sleep(0.1)  # Pequeña pausa para evitar busy-waiting
+                    remain = self.sock.send(mensaje[total_sent:].encode('utf-8'))
+                    if remain == 0:
+                        raise RuntimeError("Se cerro la conexion")
+                    total_sent += remain
+                except BlockingIOError as e:
+                    print("Error de conexión al enviar datos: :)", e)
+                    self.close()
+                    return None
             # Recibir la respuesta completa
             data = b""
             while b"\r\n\r\n" not in data:
@@ -164,7 +195,10 @@ class client:
                 print(f"No se pudo enviar el mensaje: {e}")
             #self.close()
             return None
-        
+        finally:
+            self.close()
+
+
     def extraer_value(self, value_elem):
         # Extrae el valor de un elemento <value> XML-RPC
         int_elem = value_elem.find("int")
