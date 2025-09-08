@@ -8,6 +8,7 @@ import http_utils
 class client:
 
     def __init__(self, address, port):
+        self.host = address
         self.connect(address, port)
 
     def connect(self, address, port, timeout=5):
@@ -90,13 +91,14 @@ class client:
         #Construir el XML-RPC
         xml = self.build_xmlrpc_request(name, args)
         value_elem = self.enviar_y_recibir(xml)
+        self.close()
         return value_elem
 
     def enviar_y_recibir(self, xml, timeout=5):
         # Enviar la solicitud y recibir respuesta con manejo de timeout
         self.sock.settimeout(timeout)
         try:
-            mensaje = http_utils.build_http_post_request("/", "localhost:8000", xml.decode())
+            mensaje = http_utils.build_http_post_request("/", self.host, xml.decode())
             total_sent = 0
             while total_sent < len(mensaje):
                 remain = self.sock.send(mensaje[total_sent:].encode('utf-8'))
@@ -148,14 +150,16 @@ class client:
             return value_elem
         except socket.timeout:
             print("Se agotó el tiempo de espera para la operación de envío/recepción.")
-            self.close()
+            #self.close()
             return None
         except Exception as e:
             if str(e) == "list index out of range":
                 print("Error: El servidor cerró la conexión inesperadamente.")
+            elif str(e).startswith("XML-RPC Fault"):
+                print(e)
             else:
                 print(f"No se pudo enviar el mensaje: {e}")
-            self.close()
+            #self.close()
             return None
         
     def extraer_value(self, value_elem):

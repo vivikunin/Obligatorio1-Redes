@@ -87,9 +87,11 @@ class server:
                 remain = client.send(data[total_sent:])
                 if remain == 0:
                     raise RuntimeError("Socket connection broken")
-                total_sent += remain    
+                total_sent += remain  
         except socket.timeout:
             print("Timeout esperando datos del cliente.")
+        finally:
+            client.shutdown(socket.SHUT_RDWR)
             client.close()
 
     def stub(self, data, client):

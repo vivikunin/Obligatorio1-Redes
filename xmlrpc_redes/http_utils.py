@@ -4,6 +4,7 @@ import re
 def build_http_post_request(path: str, host: str, body: str) -> str:
     headers = [
         f"POST {path} HTTP/1.1",
+        f"User-Agent: ClienteXMLRPC",
         f"Host: {host}",
         "Content-Type: text/xml",
         f"Content-Length: {len(body.encode('utf-8'))}",
