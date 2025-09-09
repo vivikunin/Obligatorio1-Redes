@@ -1,6 +1,6 @@
 import time
 from client import *
-import lorem_text 
+import lorem 
 
 if __name__ == "__main__":
     try:
