@@ -103,11 +103,15 @@ if __name__ == "__main__":
         import time
         time.sleep(10)
         return "Método lento completado"
-        
+    
+    def edad_persona(nombre, edad):
+        return f"{nombre} tiene {edad} años"
+
     #Agregar los métodos al server
     server2.add_method(funcion_muy_complicada)
     server2.add_method(gradient_descent)
     server2.add_method(estadisticas_lista)
+    server2.add_method(edad_persona)
     server2.add_method(funcion_con_error_interno)
     server2.add_method(funcion_otro_error)
     server2.add_method(metodo_lento)

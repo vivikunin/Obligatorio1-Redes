@@ -1,6 +1,5 @@
 import time
 from client import *
-import lorem 
 
 if __name__ == "__main__":
     try:
@@ -19,30 +18,47 @@ if __name__ == "__main__":
 
         #division entre 0
         cliente = client('150.150.0.2', 8000)
-        response = cliente.division(1, 0)
+        response = cliente.div(1, 0)
         if response != None:
             print("Respuesta del servidor:", response)
+        
+        #prueba de echo
+        cliente = client('150.150.0.2', 8000)
+        try:
+            resultado = cliente.echo("echo")
+            print("Echo recibido:", resultado)
+        except Exception as e:
+            print("Error en echo:", e)
 
         #prueba de echo
         cliente = client('150.150.0.2', 8000)
-        texto_largo = lorem_text.words(20000)
+        texto_largo = "palabra " * 20000  # Genera un string de 20.000 palabras
         try:
             resultado = cliente.echo(texto_largo)
-            print("Echo recibido:", resultado == texto_largo)
+            if resultado==texto_largo:
+                print("Echo recibido correctamente")
+            else:
+                print("Echo recibido incorrectamente")
         except Exception as e:
             print("Error en echo:", e)
 
         #método sin parámetros y que retorna un único valor
         cliente = client('150.150.0.2', 8000)
-        response = cliente.refran()
-        if response != None:
-            print("Respuesta del servidor:", response)
+        try:
+            response = cliente.refran()
+            if response != None:
+                print("Respuesta del servidor:", response)
+        except Exception as e:
+            print("Error en refran:", e)
 
         #método con parámetros entero y string y que retorna un único valor
-        cliente = client('150.150.0.2', 8000)
-        response = cliente.concat(1, "2")
-        if response != None:
-            print("Respuesta del servidor:", response)
+        cliente = client('100.100.0.2', 8001)
+        try:
+            response = cliente.edad_persona("Juan", 30)
+            if response != None:
+                print("Respuesta del servidor:", response)
+        except Exception as e:
+            print("Error en edad_persona:", e)
 
         #Prueba de funcion_muy_complicada para probar correcto manejo de todos los parámetros
         import datetime
@@ -110,7 +126,7 @@ if __name__ == "__main__":
 
         #prueba de otros errores
         cliente = client("100.100.0.2", 8001)
-        time.sleep(6)
+        time.sleep(10)
         try:
             resultado = cliente.funcion_otro_error()
             if resultado is not None:
