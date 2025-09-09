@@ -95,23 +95,12 @@ class client:
         value_elem = self.enviar_y_recibir(xml)
         return value_elem
 
-    def enviar_y_recibir(self, xml, timeout=5):
+    def enviar_y_recibir(self, xml, timeout=40):
         # Enviar la solicitud y recibir respuesta con manejo de timeout
         #self.sock.settimeout(timeout)   
         try:
             mensaje = http_utils.build_http_post_request("/", self.host, xml.decode())
             total_sent = 0
-            
-            '''
-            r, _, _ = select.select([self.sock], [], [], 0)
-            if r:
-                try:
-                    peek = self.sock.recv(1, socket.MSG_PEEK)
-                    if peek == b"":
-                        raise ConnectionError("El servidor ya cerró la conexión (FIN recibido).")
-                except BlockingIOError:
-                    pass
-            '''
             self.sock.settimeout(0.1)
             try:
                 test = self.sock.recv(1)
@@ -182,7 +171,6 @@ class client:
             return value_elem
         except socket.timeout:
             print("Se agotó el tiempo de espera para la operación de envío/recepción.")
-            #self.close()
             return None
         except Exception as e:
             if str(e) == "list index out of range":
@@ -191,7 +179,6 @@ class client:
                 print(e)
             else:
                 print(f"No se pudo enviar el mensaje: {e}")
-            #self.close()
             return None
         finally:
             self.close()
