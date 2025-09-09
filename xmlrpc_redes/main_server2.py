@@ -90,7 +90,10 @@ if __name__ == "__main__":
             "pares": [x for x in lista if x % 2 == 0],
             "impares": [x for x in lista if x % 2 != 0]
         }
-    
+    ##defincición de las funciones que implementan
+    def suma(a, b):
+        return int(int(a) + int(b)), "Se sumo con exito"
+
     #funcion con error interno de ejecucion
     def funcion_con_error_interno():
         raise RuntimeError("Error interno forzado para prueba")
@@ -115,6 +118,8 @@ if __name__ == "__main__":
     server2.add_method(funcion_con_error_interno)
     server2.add_method(funcion_otro_error)
     server2.add_method(metodo_lento)
+    server2.add_method(suma)
+
     server2.serve()
 
  

@@ -23,6 +23,11 @@ if __name__ == "__main__":
 
     def echo(text):
         return text
+    
+    def metodo_lento():
+        import time
+        time.sleep(10)
+        return "Método lento completado"
 
     #Agregar los métodos a cada server
     server1.add_method(suma)
@@ -31,6 +36,7 @@ if __name__ == "__main__":
     server1.add_method(div)
     server1.add_method(refran)
     server1.add_method(echo)
+    server1.add_method(metodo_lento)
 
     server1.serve()
    
