@@ -26,7 +26,7 @@ if __name__ == "__main__":
     
     def metodo_lento():
         import time
-        time.sleep(10)
+        time.sleep(20)
         return "Método lento completado"
 
     #Agregar los métodos a cada server
