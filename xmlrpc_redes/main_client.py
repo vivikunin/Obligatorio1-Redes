@@ -136,7 +136,7 @@ if __name__ == "__main__":
             print("Error:", e)
         print()     
        
-        print("prueba de método que lanza otros errores")
+        print("Prueba de timeout antes de enviar el pedido")
         cliente = client("100.100.0.2", 8001)
         time.sleep(10)
         try:
@@ -147,7 +147,7 @@ if __name__ == "__main__":
             print("Error:", e)
         print()
 
-        print("prueba metodo lento")
+        print("Prueba metodo lento: timeout durante la ejecución del método")
         cliente = client("100.100.0.2", 8001)
         try:
             resultado = cliente.metodo_lento()
