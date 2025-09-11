@@ -7,7 +7,7 @@ if __name__ == "__main__":
         #prueba metodo lento
         cliente = client("150.150.0.2", 8000)
         try:
-            resultado = cliente.sumar(1, 2)
+            resultado = cliente.suma(1, 2)
             if resultado is not None:
                 print("Resultado suma:", resultado)
         except Exception as e:

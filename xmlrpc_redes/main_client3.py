@@ -5,7 +5,7 @@ if __name__ == "__main__":
     try:
 
         #prueba metodo lento
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("150.150.0.2", 8000)
         try:
             resultado = cliente.metodo_lento()
             if resultado is not None:
