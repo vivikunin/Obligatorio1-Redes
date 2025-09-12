@@ -4,7 +4,7 @@ from client import *
 if __name__ == "__main__":
     try:
         print("Prueba metodo lento: timeout durante la ejecución del método")
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         try:
             resultado = cliente.metodo_lento()
             if resultado is not None:
@@ -14,28 +14,28 @@ if __name__ == "__main__":
         print()
 
         print("Suma con parámetros correctos")
-        cliente = client('150.150.0.2', 8000)
+        cliente = client('localhost', 8000)
         response = cliente.suma(1,3)
         if response != None:
             print("Respuesta del servidor:", response)
         print()
 
         print("Suma con parámetros incorrectos")
-        cliente = client('150.150.0.2', 8000)
+        cliente = client('localhost', 8000)
         response = cliente.suma(177)
         if response != None:
             print("Respuesta del servidor:", response)
         print()
 
         print("Division entre 0")
-        cliente = client('150.150.0.2', 8000)
+        cliente = client('localhost', 8000)
         response = cliente.div(1, 0)
         if response != None:
             print("Respuesta del servidor:", response)
         print()
 
         print("prueba de método echo con un string corto")
-        cliente = client('150.150.0.2', 8000)
+        cliente = client('localhost', 8000)
         try:
             resultado = cliente.echo("echo")
             print("Echo recibido:", resultado)
@@ -43,8 +43,8 @@ if __name__ == "__main__":
             print("Error en echo:", e)
         print()
 
-        """print("prueba de método echo con un string largo")
-        cliente = client('150.150.0.2', 8000)
+        print("prueba de método echo con un string largo")
+        cliente = client('localhost', 8000)
         texto_largo = "palabra " * 20000  # Genera un string de 20.000 palabras
         try:
             resultado = cliente.echo(texto_largo)
@@ -54,10 +54,10 @@ if __name__ == "__main__":
                 print("Echo recibido incorrectamente")
         except Exception as e:
             print("Error en echo:", e)
-        print()"""
+        print()
 
         print("prueba de método sin parámetros y que retorna un único valor")
-        cliente = client('150.150.0.2', 8000)
+        cliente = client('localhost', 8000)
         try:
             response = cliente.refran()
             if response != None:
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         print()
 
         print("prueba de método con parámetros entero y string y que retorna un único valor")
-        cliente = client('100.100.0.2', 8001)
+        cliente = client('localhost', 8001)
         try:
             response = cliente.edad_persona("Juan", 30)
             if response != None:
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
         print("Prueba de funcion_muy_complicada para probar correcto manejo de todos los parámetros")
         import datetime
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         # Parámetros de ejemplo para cada tipo XML-RPC
         ejemplo_entero = 42
         ejemplo_doble = 3.14
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         print()
 
         print("prueba de manejo de parámetros de lista")
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         lista = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         try:
             resultado = cliente.estadisticas_lista(lista, "prueba")
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         print()
 
         print("prueba de gradient descent correcto")
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         # Parámetros: a, b, c, x0, lr, epochs
         try:
             resultado = cliente.gradient_descent(1, -2, 1, 0, 0.1, 10)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         print()
 
         print("prueba de llamada a método inexistente")
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         try:
             resultado = cliente.metodo_inexistente(1, -2, 1, 0, 0.1, 10)
             if resultado != None:
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         print()
 
         print("prueba de método con error interno de ejecucion")
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         try:
             resultado = cliente.funcion_con_error_interno()
             if resultado != None:
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         print()     
        
         print("Prueba de timeout antes de enviar el pedido")
-        cliente = client("100.100.0.2", 8001)
+        cliente = client("localhost", 8001)
         time.sleep(10)
         try:
             resultado = cliente.funcion_otro_error()

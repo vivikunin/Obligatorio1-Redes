@@ -19,6 +19,26 @@ if __name__ == "__main__":
     def div(a,b):
         return a/b
     
+    def refran():
+        return "Entre fantasmas no nos pisamos la sábana - Nicolas Alberro 2025"
+
+    def echo(text):
+        return text
+    
+    def metodo_lento():
+        import time
+        time.sleep(20)
+        return "Método lento completado"
+
+    #Agregar los métodos a server 1
+    server1.add_method(suma)
+    server1.add_method(concat)
+    server1.add_method(find)
+    server1.add_method(div)
+    server1.add_method(refran)
+    server1.add_method(echo)
+    server1.add_method(metodo_lento)
+    
     def funcion_muy_complicada(
     entero,          # int
     doble,           # double
@@ -104,7 +124,10 @@ if __name__ == "__main__":
             "pares": [x for x in lista if x % 2 == 0],
             "impares": [x for x in lista if x % 2 != 0]
         }
-    
+    ##defincición de las funciones que implementan
+    def suma(a, b):
+        return int(int(a) + int(b)), "Se sumo con exito"
+
     #funcion con error interno de ejecucion
     def funcion_con_error_interno():
         raise RuntimeError("Error interno forzado para prueba")
@@ -113,18 +136,23 @@ if __name__ == "__main__":
     def funcion_otro_error():
         raise ValueError("Error inesperado para prueba de faultCode 5")
 
+    def metodo_lento():
+        import time
+        time.sleep(10)
+        return "Método lento completado"
+    
+    def edad_persona(nombre, edad):
+        return f"{nombre} tiene {edad} años"
 
-        
-    #Agregar los métodos a cada server
-    server1.add_method(suma)
-    server1.add_method(concat)
-    server1.add_method(find)
-    server1.add_method(div)
+    #Agregar los métodos al server 2
     server2.add_method(funcion_muy_complicada)
     server2.add_method(gradient_descent)
     server2.add_method(estadisticas_lista)
+    server2.add_method(edad_persona)
     server2.add_method(funcion_con_error_interno)
     server2.add_method(funcion_otro_error)
+    server2.add_method(metodo_lento)
+    server2.add_method(suma)
 
     #Creamos threads para que los servers corran en paralelo
     import threading
