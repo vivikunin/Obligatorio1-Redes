@@ -3,6 +3,15 @@ from client import *
 
 if __name__ == "__main__":
     try:
+        print("Prueba metodo lento: timeout durante la ejecución del método")
+        cliente = client("100.100.0.2", 8001)
+        try:
+            resultado = cliente.metodo_lento()
+            if resultado is not None:
+                print("Resultado prueba metodo lento:", resultado)
+        except Exception as e:
+            print("Error:", e)
+        print()
 
         print("Suma con parámetros correctos")
         cliente = client('150.150.0.2', 8000)
@@ -147,17 +156,11 @@ if __name__ == "__main__":
             print("Error:", e)
         print()
 
-        print("Prueba metodo lento: timeout durante la ejecución del método")
-        cliente = client("100.100.0.2", 8001)
-        try:
-            resultado = cliente.metodo_lento()
-            if resultado is not None:
-                print("Resultado prueba metodo lento:", resultado)
-        except Exception as e:
-            print("Error:", e)
-        print()
             
     except KeyboardInterrupt:
-            print("Cerrando conexión...")
-            cliente.close()
+        print("Cerrando conexión...")
+        cliente.close()
+    except Exception as e:
+        print("Error en la conexión:", e)
+        cliente.close()
 
